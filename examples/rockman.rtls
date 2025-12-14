@@ -1,0 +1,46 @@
+// this rtls rebuilds rockman's sprite from a rom!
+
+// path to the binary
+rockman.nes
+
+// path to the palette
+nes.pal
+
+// which tile to start from, in radix 16
+// this starts reading from 0x1000
+100
+
+// how many tiles to get, in radix 16
+// this will read 0x810 bytes
+81
+
+// these lines represent data!
+// index,x,y,c0,c1,c2
+//
+// index: radix 16
+// x & y: radix 8 (this is more useful than you think)
+// c0 & c1 & c2: radix 16, in your palette
+
+// idle: eyes opened
+1,7,6,20,37,1D
+A,0,0,11,2C,1D
+B,10,0,11,2C,1D
+C,20,0,11,2C,1D
+1A,0,10,11,2C,1D
+1B,10,10,11,2C,1D
+1C,20,10,11,2C,1D
+2A,0,20,11,2C,1D
+2B,10,20,11,2C,1D
+2C,20,20,11,2C,1D
+
+// idle: eyes closed
+21,37,6,20,37,1D
+A,30,0,11,2C,1D
+B,40,0,11,2C,1D
+C,50,0,11,2C,1D
+1A,30,10,11,2C,1D
+1B,40,10,11,2C,1D
+1C,50,10,11,2C,1D
+2A,30,20,11,2C,1D
+2B,40,20,11,2C,1D
+2C,50,20,11,2C,1D

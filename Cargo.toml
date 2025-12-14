@@ -1,0 +1,28 @@
+[package]
+name = "chr-reatlas"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "a renderer/reatlaser for CHR tables in .nes roms"
+homepage = "https://github.com/yynaa/chr-reatlas"
+repository = "https://github.com/yynaa/chr-reatlas"
+readme = "README.md"
+keywords = ["nes", "graphics"]
+categories = ["graphics", "parsing"]
+
+[dependencies]
+log = {version = "^0.4.0"}
+arbitrary-int = {version = "^2.0.0"}
+bitvec = {version = "^1.0.0"}
+image = {version = "^0.25.0"}
+thiserror = {version = "^2.0.0"}
+
+# bin only dependencies
+clap = {version = "^4.5.0", optional = true, features = ["derive"]}
+clap-num = {version = "^1.2.0", optional = true}
+pretty_env_logger = {version = "^0.5.0", optional = true}
+
+
+[features]
+# binary
+bin = ["clap", "clap-num", "pretty_env_logger"]
