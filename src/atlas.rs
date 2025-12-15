@@ -30,6 +30,12 @@ pub struct AtlasData {
   pub y: u32,
 }
 
+macro_rules! error_mapper {
+  ($s:expr) => {
+    |e| crate::Error::AtlasParseError($s.to_string(), e)
+  };
+}
+
 fn parse_line(c: &str) -> Result<AtlasData, crate::Error> {
   let s: Vec<&str> = c.split(",").collect();
 
@@ -37,12 +43,12 @@ fn parse_line(c: &str) -> Result<AtlasData, crate::Error> {
     return Err(crate::Error::AtlasShapeError);
   }
 
-  let chr_index = usize::from_str_radix(s[0], 16).map_err(crate::Error::AtlasParseError)?;
-  let x = u32::from_str_radix(s[1], 8).map_err(crate::Error::AtlasParseError)?;
-  let y = u32::from_str_radix(s[2], 8).map_err(crate::Error::AtlasParseError)?;
-  let c0 = usize::from_str_radix(s[3], 16).map_err(crate::Error::AtlasParseError)?;
-  let c1 = usize::from_str_radix(s[4], 16).map_err(crate::Error::AtlasParseError)?;
-  let c2 = usize::from_str_radix(s[5], 16).map_err(crate::Error::AtlasParseError)?;
+  let chr_index = usize::from_str_radix(s[0], 16).map_err(error_mapper!(s[0]))?;
+  let x = u32::from_str_radix(s[1], 8).map_err(error_mapper!(s[1]))?;
+  let y = u32::from_str_radix(s[2], 8).map_err(error_mapper!(s[2]))?;
+  let c0 = usize::from_str_radix(s[3], 16).map_err(error_mapper!(s[3]))?;
+  let c1 = usize::from_str_radix(s[4], 16).map_err(error_mapper!(s[4]))?;
+  let c2 = usize::from_str_radix(s[5], 16).map_err(error_mapper!(s[5]))?;
 
   Ok(AtlasData {
     chr_index,
@@ -66,8 +72,8 @@ pub fn parse_atlas(c: &str) -> Result<Atlas, crate::Error> {
 
   let bin = s[0].to_string();
   let pal = s[1].to_string();
-  let start = u64::from_str_radix(s[2], 16).map_err(crate::Error::AtlasParseError)?;
-  let length = usize::from_str_radix(s[3], 16).map_err(crate::Error::AtlasParseError)?;
+  let start = u64::from_str_radix(s[2], 16).map_err(error_mapper!(s[2]))?;
+  let length = usize::from_str_radix(s[3], 16).map_err(error_mapper!(s[3]))?;
   let mut data = Vec::new();
 
   for i in 4..s.len() {
