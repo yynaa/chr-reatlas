@@ -1,17 +1,16 @@
 [package]
-name = "reatlaser-cli"
-version = "0.1.2"
+name = "reatlaser"
+version = "0.1.0"
 edition = "2024"
 license = "MIT"
-description = "a cli for chr-reatlas"
+description = "a gui for chr-reatlas"
 homepage = "https://github.com/yynaa/chr-reatlas"
 repository = "https://github.com/yynaa/chr-reatlas"
 readme = "README.md"
 
 [dependencies]
 chr-reatlas = { path = "../chr-reatlas", features = ["serde"] }
-clap = {version = "^4.5.0", features = ["derive"]}
-clap-num = {version = "^1.2.0"}
 pretty_env_logger = {version = "^0.5.0"}
 serde = {version = "^1.0.0", features = ["derive"]}
 toml = {version = "^0.9.0"}
+raylib = { version = "^5.5.0", features = [] }
