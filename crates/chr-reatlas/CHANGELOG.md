@@ -4,6 +4,10 @@ Based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Several options for getting images as bytes instead of rendering them directly
+
 ### Changed
 
 - Functions for atlas (now located within the atlas object)

@@ -1,6 +1,6 @@
 use std::num::ParseIntError;
 
-use image::{Rgba, RgbaImage};
+use image::{Rgba, RgbaImage, codecs::png::PngEncoder};
 
 use crate::{
   chr::{ChrPixelPattern, read_bytes},
@@ -35,29 +35,30 @@ pub(crate) fn append_pattern_on_image(
   }
 }
 
+fn get_pattern(pat: ChrPixelPattern, pal: ChrPalette) -> Result<RgbaImage, crate::Error> {
+  let mut img = RgbaImage::new(8, 8);
+
+  append_pattern_on_image(&mut img, pat, 0, 0, pal);
+
+  Ok(img)
+}
+
 /// renders a pattern to an image
 pub fn render_pattern(
   path: String,
   pat: ChrPixelPattern,
   pal: ChrPalette,
 ) -> Result<(), crate::Error> {
-  let mut img = RgbaImage::new(8, 8);
-
-  append_pattern_on_image(&mut img, pat, 0, 0, pal);
-
-  img.save(path).map_err(crate::Error::ImageError)?;
-
+  get_pattern(pat, pal)?
+    .save(path)
+    .map_err(crate::Error::ImageError)?;
   Ok(())
 }
 
-/// renders a list of patterns to an image
-///
-/// the number of patterns per line is 16
-pub fn render_patterns(
-  path: String,
+fn get_patterns(
   pats: Vec<ChrPixelPattern>,
   pals: Vec<ChrPalette>,
-) -> Result<(), crate::Error> {
+) -> Result<RgbaImage, crate::Error> {
   const PATS_PER_LINE: u32 = 16;
   let img_width = PATS_PER_LINE * 8;
   let img_height = (pats.len() as u32).div_ceil(PATS_PER_LINE) * 8;
@@ -70,9 +71,37 @@ pub fn render_patterns(
     append_pattern_on_image(&mut img, *pat, x * 8, y * 8, pals[i]);
   }
 
-  img.save(path).map_err(crate::Error::ImageError)?;
+  Ok(img)
+}
+
+/// renders a list of patterns to an image
+///
+/// the number of patterns per line is 16
+pub fn render_patterns(
+  path: String,
+  pats: Vec<ChrPixelPattern>,
+  pals: Vec<ChrPalette>,
+) -> Result<(), crate::Error> {
+  get_patterns(pats, pals)?
+    .save(path)
+    .map_err(crate::Error::ImageError)?;
 
   Ok(())
+}
+
+/// gets a list of patterns as bytes of an image
+pub fn get_patterns_as_png_bytes(
+  pats: Vec<ChrPixelPattern>,
+  pals: Vec<ChrPalette>,
+) -> Result<Vec<u8>, crate::Error> {
+  let p = get_patterns(pats, pals)?;
+
+  let mut bytes = Vec::new();
+  let encoder = PngEncoder::new(&mut bytes);
+  p.write_with_encoder(encoder)
+    .map_err(crate::Error::ImageError)?;
+
+  Ok(bytes)
 }
 
 /// renders a list of patterns and graduates them in hexadecimal

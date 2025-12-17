@@ -19,7 +19,8 @@ impl Default for ChrPalette {
   }
 }
 
-pub(crate) fn read_palette_from_bytes(b: Vec<u8>) -> Result<Vec<[u8; 3]>, crate::Error> {
+/// reads a palette from its bytes
+pub fn read_palette_from_bytes(b: Vec<u8>) -> Result<Vec<[u8; 3]>, crate::Error> {
   let slices = b.chunks(3);
   let mut pal = Vec::new();
 
