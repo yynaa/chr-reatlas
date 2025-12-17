@@ -1,21 +1,16 @@
-#[cfg(feature = "bin")]
 use std::{
   fs::{File, read_to_string},
   io::{Read, Seek, SeekFrom},
 };
 
-#[cfg(feature = "bin")]
 use chr_reatlas::{
   atlas::{parse_atlas, render_image_from_atlas},
   chr::read_bytes,
   render::{ChrPalette, render_patterns_with_graduations},
 };
-#[cfg(feature = "bin")]
 use clap::{Args, Parser, Subcommand};
-#[cfg(feature = "bin")]
 use clap_num::maybe_hex;
 
-#[cfg(feature = "bin")]
 #[derive(Parser)]
 #[command(
   version,
@@ -28,7 +23,6 @@ struct Cli {
   command: Commands,
 }
 
-#[cfg(feature = "bin")]
 #[derive(Subcommand)]
 enum Commands {
   /// Get raw CHR to a png
@@ -38,7 +32,6 @@ enum Commands {
   Atlas(AtlasArgs),
 }
 
-#[cfg(feature = "bin")]
 #[derive(Args)]
 struct GetArgs {
   /// path to rom, parsed with nes_rom crate
@@ -58,7 +51,6 @@ struct GetArgs {
   length: usize,
 }
 
-#[cfg(feature = "bin")]
 #[derive(Args)]
 struct AtlasArgs {
   /// atlas to parse
@@ -70,7 +62,6 @@ struct AtlasArgs {
   output_path: String,
 }
 
-#[cfg(feature = "bin")]
 pub fn main() {
   pretty_env_logger::init_timed();
 
@@ -94,10 +85,4 @@ pub fn main() {
       render_image_from_atlas(a, args.output_path.clone()).unwrap();
     }
   }
-}
-
-#[cfg(not(feature = "bin"))]
-pub fn main() {
-  eprintln!("cli requires feature 'bin' to be enabled");
-  std::process::exit(1);
 }

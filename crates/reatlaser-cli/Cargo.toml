@@ -1,0 +1,21 @@
+[package]
+name = "reatlaser-cli"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "a cli for chr-reatlas"
+homepage = "https://github.com/yynaa/chr-reatlas"
+repository = "https://github.com/yynaa/chr-reatlas"
+readme = "README.md"
+keywords = ["nes", "graphics"]
+categories = ["graphics", "parsing"]
+exclude = [
+  "assets/*",
+  "examples/*"
+]
+
+[dependencies]
+chr-reatlas = { path = "../chr-reatlas" }
+clap = {version = "^4.5.0", features = ["derive"]}
+clap-num = {version = "^1.2.0"}
+pretty_env_logger = {version = "^0.5.0"}
