@@ -1,3 +1,11 @@
+//! # chr-reatlas
+//!
+//! *a renderer/reatlaser for CHR tables in .nes roms*
+//!
+//! if you are looking to make a spritesheet out of chrs, you are looking for [`Atlas`](atlas::Atlas)es \
+//! if you are looking to render helpers, you are looking for the [`render`] module
+//!
+
 use std::{array::TryFromSliceError, io, num::ParseIntError};
 
 use image::ImageError;
@@ -5,7 +13,7 @@ use thiserror::Error;
 
 pub mod atlas;
 pub mod chr;
-pub(crate) mod pal;
+pub mod pal;
 pub mod render;
 
 #[derive(Debug, Error)]

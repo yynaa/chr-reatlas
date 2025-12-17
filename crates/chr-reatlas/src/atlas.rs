@@ -8,28 +8,41 @@ use std::{
 
 use crate::{
   chr::read_bytes,
-  pal::read_palette,
-  render::{ChrPalette, append_pattern_on_image},
+  pal::{ChrPalette, read_palette_from_bytes},
+  render::append_pattern_on_image,
 };
 
+/// allows complex rendering of tiles or sprites from a chr binary
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug)]
 pub struct Atlas {
+  /// binary to source from
   pub binary: String,
+  /// palette, must be a .pal file format
   pub palette: String,
+  /// which address to start from
   pub start: u64,
+  /// how many bytes to read
   pub length: usize,
+  /// atlas data, contains every single tile to draw
   pub data: Vec<AtlasData>,
 }
 
+/// contains data for drawing one 8x8 tile
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug)]
 pub struct AtlasData {
+  /// index of the tile
   pub chr_index: usize,
+  /// color 0
   pub c0: usize,
+  /// color 1
   pub c1: usize,
+  /// color 2
   pub c2: usize,
+  /// x position
   pub x: u32,
+  /// y position
   pub y: u32,
 }
 
@@ -52,7 +65,7 @@ impl Atlas {
       .read_to_end(&mut pal_buf)
       .map_err(crate::Error::IOError)?;
 
-    let pal = read_palette(pal_buf)?;
+    let pal = read_palette_from_bytes(pal_buf)?;
 
     let img_size = self
       .data
@@ -80,12 +93,14 @@ impl Atlas {
     Ok(img)
   }
 
+  /// renders the atlas to a file
   pub fn render_image(&self, output_path: String) -> Result<(), crate::Error> {
     let img = self.get_image()?;
     img.save(output_path).map_err(crate::Error::ImageError)?;
     Ok(())
   }
 
+  /// returns raw bytes for an image, allows crates to load them from memory
   pub fn get_image_bytes(&self) -> Result<Vec<u8>, crate::Error> {
     let img = self.get_image()?;
     Ok(img.as_bytes().to_vec())

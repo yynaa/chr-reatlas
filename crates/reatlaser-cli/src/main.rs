@@ -6,7 +6,8 @@ use std::{
 use chr_reatlas::{
   atlas::Atlas,
   chr::read_bytes,
-  render::{ChrPalette, render_patterns_with_graduations},
+  render::{render_patterns_with_graduations},
+  pal::ChrPalette
 };
 use clap::{Args, Parser, Subcommand};
 use clap_num::maybe_hex;

@@ -2,24 +2,10 @@ use std::num::ParseIntError;
 
 use image::{Rgba, RgbaImage};
 
-use crate::{chr::ChrPixelPattern, chr::read_bytes};
-
-#[derive(Clone, Copy, Eq, PartialEq, Debug)]
-pub struct ChrPalette {
-  pub c0: [u8; 3],
-  pub c1: [u8; 3],
-  pub c2: [u8; 3],
-}
-
-impl Default for ChrPalette {
-  fn default() -> Self {
-    Self {
-      c0: [86, 86, 86],
-      c1: [170, 170, 170],
-      c2: [255, 255, 255],
-    }
-  }
-}
+use crate::{
+  chr::{ChrPixelPattern, read_bytes},
+  pal::ChrPalette,
+};
 
 pub(crate) fn append_pattern_on_image(
   image: &mut RgbaImage,
@@ -49,6 +35,7 @@ pub(crate) fn append_pattern_on_image(
   }
 }
 
+/// renders a pattern to an image
 pub fn render_pattern(
   path: String,
   pat: ChrPixelPattern,
@@ -63,6 +50,9 @@ pub fn render_pattern(
   Ok(())
 }
 
+/// renders a list of patterns to an image
+///
+/// the number of patterns per line is 16
 pub fn render_patterns(
   path: String,
   pats: Vec<ChrPixelPattern>,
@@ -85,6 +75,9 @@ pub fn render_patterns(
   Ok(())
 }
 
+/// renders a list of patterns and graduates them in hexadecimal
+///
+/// the number of patterns per line is 16
 pub fn render_patterns_with_graduations(
   path: String,
   pats: Vec<ChrPixelPattern>,

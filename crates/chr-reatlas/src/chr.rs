@@ -5,6 +5,7 @@ pub type ChrPixelPattern = [[u2; 8]; 8];
 
 // --- READING ---
 
+/// read a single chr from bytes
 pub fn read_single_chr(b: [u8; 16]) -> ChrPixelPattern {
   let mut r = [[u2::new(0); 8]; 8];
 
@@ -29,6 +30,7 @@ pub fn read_single_chr(b: [u8; 16]) -> ChrPixelPattern {
   r
 }
 
+/// read a vector of chrs from bytes
 pub fn read_bytes(b: Vec<u8>) -> Result<Vec<ChrPixelPattern>, crate::Error> {
   let slices = b.chunks(16);
   let mut chrs = Vec::new();
