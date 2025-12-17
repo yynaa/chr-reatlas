@@ -4,6 +4,10 @@ Based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Changed
+
+- Functions for atlas (now located within the atlas object)
+
 ### Removed
 
 - CLI (moved to reatlaser-cli)
