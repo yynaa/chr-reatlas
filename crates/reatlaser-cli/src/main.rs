@@ -4,7 +4,7 @@ use std::{
 };
 
 use chr_reatlas::{
-  atlas::{parse_atlas, render_image_from_atlas},
+  atlas::Atlas,
   chr::read_bytes,
   render::{ChrPalette, render_patterns_with_graduations},
 };
@@ -81,8 +81,8 @@ pub fn main() {
 
     Commands::Atlas(args) => {
       let atlas_str = read_to_string(args.atlas_path.clone()).unwrap();
-      let a = parse_atlas(&atlas_str).unwrap();
-      render_image_from_atlas(a, args.output_path.clone()).unwrap();
+      let atlas: Atlas = toml::from_str(&atlas_str).unwrap();
+      atlas.render_image(args.output_path.clone()).unwrap();
     }
   }
 }

@@ -6,14 +6,4 @@
 
 ## usage
 
-### renderer
-
-see `render.rs`
-
-### reatlaser
-
-see `atlas.rs`, format in `examples/`
-
-### cli
-
-build with the `bin` feature, then run with `--help` flag
+todo

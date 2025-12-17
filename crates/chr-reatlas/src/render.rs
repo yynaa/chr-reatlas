@@ -21,7 +21,7 @@ impl Default for ChrPalette {
   }
 }
 
-pub fn append_pattern_on_image(
+pub(crate) fn append_pattern_on_image(
   image: &mut RgbaImage,
   pat: ChrPixelPattern,
   sx: u32,

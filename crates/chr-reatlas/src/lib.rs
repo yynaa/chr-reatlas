@@ -5,7 +5,7 @@ use thiserror::Error;
 
 pub mod atlas;
 pub mod chr;
-pub mod pal;
+pub(crate) mod pal;
 pub mod render;
 
 #[derive(Debug, Error)]
