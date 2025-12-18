@@ -68,6 +68,9 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
               c0: c.default_colors[0],
               c1: c.default_colors[1],
               c2: c.default_colors[2],
+              transpose: false,
+              flip_x: false,
+              flip_y: false,
             });
             ad.regen_atlas_texture(d, t, a).unwrap();
           }

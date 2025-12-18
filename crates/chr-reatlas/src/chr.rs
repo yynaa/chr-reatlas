@@ -46,7 +46,9 @@ pub fn flip_y(b: &mut ChrPixelPattern) {
 pub fn transpose(b: &mut ChrPixelPattern) {
   for i in 1..8 {
     for j in 0..i {
+      let o = b[i][j];
       b[i][j] = b[j][i];
+      b[j][i] = o;
     }
   }
 }

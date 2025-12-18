@@ -174,6 +174,40 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                 ad.regen_atlas_texture(d, &t, a).unwrap();
               }
 
+              if d.gui_check_box(
+                Rectangle::new(inside_rect.x + 10., inside_rect.y + 10. + 130., 20., 20.),
+                "Transpose",
+                &mut a.data[*sd].transpose,
+              ) {
+                ad.regen_atlas_texture(d, &t, a).unwrap();
+              }
+
+              if d.gui_check_box(
+                Rectangle::new(
+                  inside_rect.x + 10. + (inside_rect.width - 20.) / 3.,
+                  inside_rect.y + 10. + 130.,
+                  20.,
+                  20.,
+                ),
+                "Flip X",
+                &mut a.data[*sd].flip_x,
+              ) {
+                ad.regen_atlas_texture(d, &t, a).unwrap();
+              }
+
+              if d.gui_check_box(
+                Rectangle::new(
+                  inside_rect.x + 10. + 2. * (inside_rect.width - 20.) / 3.,
+                  inside_rect.y + 10. + 130.,
+                  20.,
+                  20.,
+                ),
+                "Flip Y",
+                &mut a.data[*sd].flip_y,
+              ) {
+                ad.regen_atlas_texture(d, &t, a).unwrap();
+              }
+
               if d.gui_button(
                 Rectangle::new(
                   inside_rect.x + 10.,
