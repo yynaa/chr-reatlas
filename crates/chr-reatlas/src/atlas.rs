@@ -45,13 +45,13 @@ pub struct AtlasData {
   /// y position
   pub y: u32,
   /// transpose
-  #[serde(default)]
+  #[cfg_attr(feature = "serde", serde(default))]
   pub transpose: bool,
   /// flip x
-  #[serde(default)]
+  #[cfg_attr(feature = "serde", serde(default))]
   pub flip_x: bool,
   /// flip y
-  #[serde(default)]
+  #[cfg_attr(feature = "serde", serde(default))]
   pub flip_y: bool,
 }
 
