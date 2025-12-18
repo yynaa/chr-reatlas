@@ -16,6 +16,10 @@ impl Pane<Context, FilePanelMessage> for FilePanel {
     Self {}
   }
 
+  fn is_opened(&self, _c: &Context) -> bool {
+    true
+  }
+
   fn get_rect(&self, _d: &raylib::prelude::RaylibDrawHandle) -> raylib::prelude::Rectangle {
     Rectangle::new(10., 10., 95., 125.)
   }

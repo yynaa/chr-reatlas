@@ -5,7 +5,9 @@ use crate::Context;
 pub struct Editor {
   camera: Camera2D,
 
-  selected_data: Option<usize>,
+  moving_data: Option<usize>,
+  moving_initial_click: Vector2,
+  moving: bool,
 }
 
 pub enum EditorMessages {}
@@ -17,10 +19,12 @@ impl Editor {
         offset: Vector2::zero(),
         target: Vector2::zero(),
         rotation: 0.,
-        zoom: 1.,
+        zoom: 3.,
       },
 
-      selected_data: None,
+      moving_data: None,
+      moving_initial_click: Vector2::zero(),
+      moving: false,
     }
   }
 
@@ -52,26 +56,41 @@ impl Editor {
 
           self.camera.zoom += dc.get_mouse_wheel_move() * 0.25;
 
-          if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_MIDDLE) {
+          if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_RIGHT) {
             self.camera.target -= dc.get_mouse_delta() / self.camera.zoom;
           }
 
-          if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) && self.selected_data.is_none()
-          {
+          if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+            c.selected_data = None;
             for (j, data) in a.data.iter().enumerate() {
               if Rectangle::new(data.x as f32, data.y as f32, 8., 8.)
                 .check_collision_point_rec(projected_mouse)
               {
-                self.selected_data = Some(j);
+                if self.moving_data.is_none() {
+                  self.moving_data = Some(j);
+                  self.moving_initial_click = projected_mouse;
+                  self.moving = false;
+                }
+                if c.selected_data.is_none() {
+                  c.selected_data = Some(j);
+                }
               }
             }
-          }
-          if !dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
-            if let Some(sd) = &self.selected_data {
-              a.data[*sd].x = (projected_mouse.x - 4.).round() as u32;
-              a.data[*sd].y = (projected_mouse.y - 4.).round() as u32;
-              self.selected_data = None;
-              ad.regen_atlas_texture(&mut dc, t, a).unwrap();
+            if self.moving_data.is_some()
+              && !self.moving
+              && projected_mouse.distance_to(self.moving_initial_click) > 1.5
+            {
+              self.moving = true;
+            }
+          } else {
+            if self.moving {
+              if let Some(sd) = &self.moving_data {
+                a.data[*sd].x = (projected_mouse.x - 4.).round() as u32;
+                a.data[*sd].y = (projected_mouse.y - 4.).round() as u32;
+                self.moving_data = None;
+                self.moving = false;
+                ad.regen_atlas_texture(&mut dc, t, a).unwrap();
+              }
             }
           }
         }
@@ -86,9 +105,14 @@ impl Editor {
 
         if let Some(at) = &ad.atlas_texture {
           dc.draw_texture(&at, 0, 0, Color::WHITE);
-          if let Some(sd) = self.selected_data {
+          if self.moving && self.moving_data.is_some() {
             dc.draw_rectangle_rec(
-              Rectangle::new(projected_mouse.x - 4., projected_mouse.y - 4., 8., 8.),
+              Rectangle::new(
+                (projected_mouse.x - 4.).round(),
+                (projected_mouse.y - 4.).round(),
+                8.,
+                8.,
+              ),
               Color::new(255, 255, 255, 100),
             );
           }

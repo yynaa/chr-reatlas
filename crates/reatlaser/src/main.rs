@@ -23,6 +23,7 @@ pub(crate) mod window;
 pub(crate) struct Context {
   atlas: Option<Atlas>,
   atlas_display: Option<AtlasDisplay>,
+  selected_data: Option<usize>,
 }
 
 impl Context {
@@ -30,6 +31,7 @@ impl Context {
     Self {
       atlas: None,
       atlas_display: None,
+      selected_data: None,
     }
   }
 }
@@ -69,12 +71,18 @@ fn main() {
       // --- EDITOR ---
       {
         let i = !atlas_context_window.is_opened();
-        let no_passthrough_rects = vec![file_panel.get_rect(&d)];
+        let mut no_passthrough_rects = vec![];
+        if file_panel.is_opened(&context) {
+          no_passthrough_rects.push(file_panel.get_rect(&mut d));
+        }
+        if picker_panel.is_opened(&context) {
+          no_passthrough_rects.push(picker_panel.get_rect(&mut d));
+        }
         editor.display(&mut d, &thread, &mut context, no_passthrough_rects, i);
       }
 
       // --- FILE PANEL ---
-      {
+      if file_panel.is_opened(&context) {
         let i = !atlas_context_window.is_opened();
         let messages = file_panel.display(&mut d, &thread, &mut context, i);
         for m in messages {
@@ -87,7 +95,7 @@ fn main() {
       }
 
       // --- PICKER ---
-      if context.atlas_display.is_some() {
+      if picker_panel.is_opened(&context) {
         let i = !atlas_context_window.is_opened();
         picker_panel.display(&mut d, &thread, &mut context, i);
       }

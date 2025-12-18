@@ -5,6 +5,7 @@ pub mod picker;
 
 pub(crate) trait Pane<C, M> {
   fn init() -> Self;
+  fn is_opened(&self, _c: &C) -> bool;
   fn get_rect(&self, d: &RaylibDrawHandle) -> Rectangle;
   fn display(
     &mut self,

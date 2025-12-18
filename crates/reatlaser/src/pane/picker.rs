@@ -14,6 +14,10 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
     Self {}
   }
 
+  fn is_opened(&self, c: &Context) -> bool {
+    c.atlas_display.is_some()
+  }
+
   fn get_rect(&self, d: &RaylibDrawHandle) -> Rectangle {
     let width = d.get_screen_width();
     let height = d.get_screen_height();
@@ -61,9 +65,9 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
               chr_index: j,
               x: 0,
               y: 0,
-              c0: 1,
-              c1: 2,
-              c2: 3,
+              c0: 0,
+              c1: 0,
+              c2: 0,
             });
             ad.regen_atlas_texture(d, t, a).unwrap();
           }
