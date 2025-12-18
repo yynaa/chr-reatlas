@@ -1,7 +1,8 @@
-use std::time::Instant;
-
 use chr_reatlas::atlas::Atlas;
+use raylib::prelude::GuiControl::*;
+use raylib::prelude::GuiDefaultProperty::*;
 use raylib::prelude::*;
+use std::time::Instant;
 
 use crate::{Context, SelectionType};
 
@@ -185,10 +186,11 @@ impl Editor {
 
         // --- RENDERING ---
 
-        let grid_color = Color::new(255, 255, 255, 50);
+        let bg_color = Color::get_color(dc.gui_get_style(DEFAULT, BACKGROUND_COLOR) as u32);
+        let invert_color = Color::new(255 - bg_color.r, 255 - bg_color.g, 255 - bg_color.b, 128);
         for j in 0..1000 {
-          dc.draw_line(0, j * 8, 8000, j * 8, grid_color);
-          dc.draw_line(j * 8, 0, j * 8, 8000, grid_color);
+          dc.draw_line(0, j * 8, 8000, j * 8, invert_color);
+          dc.draw_line(j * 8, 0, j * 8, 8000, invert_color);
         }
 
         if let Some(at) = &ad.atlas_texture {
@@ -207,7 +209,7 @@ impl Editor {
                       8. + 2. * LINE_WIDTH,
                     ),
                     LINE_WIDTH,
-                    Color::WHITE,
+                    invert_color,
                   );
                 }
                 SelectionType::Multiple(sds) => {
@@ -220,7 +222,7 @@ impl Editor {
                         8. + 2. * LINE_WIDTH,
                       ),
                       LINE_WIDTH,
-                      Color::WHITE,
+                      invert_color,
                     );
                   }
                 }
@@ -293,7 +295,7 @@ impl Editor {
               (self.lc_pressed_pos.y - projected_mouse.y).abs(),
             );
 
-            dc.draw_rectangle_rec(srec, Color::new(255, 255, 255, 128));
+            dc.draw_rectangle_rec(srec, invert_color);
           }
         }
       }

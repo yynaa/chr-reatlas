@@ -1,4 +1,3 @@
-use std::env;
 use std::path::Path;
 
 use chr_reatlas::atlas::Atlas;
@@ -56,8 +55,9 @@ fn main() {
 
   rl.set_target_fps(60);
 
-  let style_loc = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string()))
-    .join("assets/style.rgs");
+  let style_loc = dirs::config_dir()
+    .unwrap()
+    .join(Path::new("reatlaser/style.rgs"));
 
   rl.gui_load_style(style_loc.to_str().unwrap());
 

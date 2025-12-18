@@ -53,6 +53,16 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
             SelectionType::Single(sd) => {
               d.gui_panel(self.get_rect(d), "selected data");
 
+              d.draw_rectangle_rec(
+                Rectangle::new(
+                  inside_rect.x + inside_rect.width - 10. - 40. - 5.,
+                  inside_rect.y + 10. - 5.,
+                  40. + 10.,
+                  40. + 10.,
+                ),
+                Color::BLACK,
+              );
+
               d.draw_texture_pro(
                 &ad.binary_texture,
                 Rectangle::new(
@@ -75,7 +85,7 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
               d.gui_label(
                 Rectangle::new(
                   inside_rect.x + inside_rect.width - 10. - 40.,
-                  inside_rect.y + 50.,
+                  inside_rect.y + 55.,
                   40.,
                   10.,
                 ),
