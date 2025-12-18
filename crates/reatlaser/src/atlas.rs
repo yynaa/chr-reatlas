@@ -10,6 +10,7 @@ use std::{
 
 pub struct AtlasDisplay {
   pub binary_texture: Texture2D,
+  pub atlas_texture: Option<Texture2D>,
 }
 
 impl AtlasDisplay {
@@ -25,6 +26,36 @@ impl AtlasDisplay {
     let binary_image = Image::load_image_from_mem(".png", &binary_patterns_bytes)?;
     let binary_texture = d.load_texture_from_image(thread, &binary_image)?;
 
-    Ok(Self { binary_texture })
+    let atlas_texture = match a.data.len() {
+      0 => None,
+      _ => {
+        let atlas_bytes = a.get_png_bytes()?;
+        let atlas_image = Image::load_image_from_mem(".png", &atlas_bytes)?;
+        Some(d.load_texture_from_image(thread, &atlas_image)?)
+      }
+    };
+
+    Ok(Self {
+      binary_texture,
+      atlas_texture,
+    })
+  }
+
+  pub fn regen_atlas_texture(
+    &mut self,
+    d: &mut RaylibDrawHandle,
+    thread: &RaylibThread,
+    a: &Atlas,
+  ) -> Result<()> {
+    self.atlas_texture = match a.data.len() {
+      0 => None,
+      _ => {
+        let atlas_bytes = a.get_png_bytes()?;
+        let atlas_image = Image::load_image_from_mem(".png", &atlas_bytes)?;
+        Some(d.load_texture_from_image(thread, &atlas_image)?)
+      }
+    };
+
+    Ok(())
   }
 }

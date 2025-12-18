@@ -27,7 +27,7 @@ impl Editor {
   pub fn display(
     &mut self,
     d: &mut RaylibDrawHandle,
-    _t: &RaylibThread,
+    t: &RaylibThread,
     c: &mut Context,
     no_passthrough_rects: Vec<Rectangle>,
     i: bool,
@@ -59,7 +59,7 @@ impl Editor {
           if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) && self.selected_data.is_none()
           {
             for (j, data) in a.data.iter().enumerate() {
-              if Rectangle::new(data.x as f32 * 8., data.y as f32 * 8., 8., 8.)
+              if Rectangle::new(data.x as f32, data.y as f32, 8., 8.)
                 .check_collision_point_rec(projected_mouse)
               {
                 self.selected_data = Some(j);
@@ -68,42 +68,30 @@ impl Editor {
           }
           if !dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
             if let Some(sd) = &self.selected_data {
-              a.data[*sd].x = (projected_mouse.x / 8.).floor() as u32;
-              a.data[*sd].y = (projected_mouse.y / 8.).floor() as u32;
+              a.data[*sd].x = (projected_mouse.x - 4.).round() as u32;
+              a.data[*sd].y = (projected_mouse.y - 4.).round() as u32;
               self.selected_data = None;
+              ad.regen_atlas_texture(&mut dc, t, a).unwrap();
             }
           }
         }
 
         // --- RENDERING ---
-        for (j, data) in a.data.iter().enumerate() {
-          let texture_width = ad.binary_texture.width as f32;
 
-          let source_size = texture_width / 16.;
+        let grid_color = Color::new(255, 255, 255, 50);
+        for j in 0..1000 {
+          dc.draw_line(0, j * 8, 8000, j * 8, grid_color);
+          dc.draw_line(j * 8, 0, j * 8, 8000, grid_color);
+        }
 
-          let source_rec = Rectangle::new(
-            (data.chr_index % 16) as f32 * source_size,
-            (data.chr_index / 16) as f32 * source_size,
-            source_size,
-            source_size,
-          );
-
-          let dst_rec = match self.selected_data {
-            None => Rectangle::new(data.x as f32 * 8., data.y as f32 * 8., 8., 8.),
-            Some(id) => match id == j {
-              false => Rectangle::new(data.x as f32 * 8., data.y as f32 * 8., 8., 8.),
-              true => Rectangle::new(projected_mouse.x - 4., projected_mouse.y - 4., 8., 8.),
-            },
-          };
-
-          dc.draw_texture_pro(
-            &ad.binary_texture,
-            source_rec,
-            dst_rec,
-            Vector2::zero(),
-            0.,
-            Color::WHITE,
-          );
+        if let Some(at) = &ad.atlas_texture {
+          dc.draw_texture(&at, 0, 0, Color::WHITE);
+          if let Some(sd) = self.selected_data {
+            dc.draw_rectangle_rec(
+              Rectangle::new(projected_mouse.x - 4., projected_mouse.y - 4., 8., 8.),
+              Color::new(255, 255, 255, 100),
+            );
+          }
         }
       }
     }

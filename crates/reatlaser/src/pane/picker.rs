@@ -32,7 +32,7 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
   fn display(
     &mut self,
     d: &mut RaylibDrawHandle,
-    _t: &RaylibThread,
+    t: &RaylibThread,
     c: &mut Context,
     _i: bool,
   ) -> Vec<PickerPaneMessage> {
@@ -45,30 +45,31 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
 
     d.gui_panel(self.get_rect(d), "picker");
 
-    if let Some(a) = &mut c.atlas {
-      let n = a.length / 0x10;
-      for j in 0..n {
-        let x = j % 16;
-        let y = j / 16;
+    if let Some(ad) = &mut c.atlas_display {
+      if let Some(a) = &mut c.atlas {
+        let n = a.length / 0x10;
+        for j in 0..n {
+          let x = j % 16;
+          let y = j / 16;
 
-        let rs = inside_rect.width / 16.;
-        let rx = inside_rect.x + x as f32 * rs;
-        let ry = inside_rect.y + y as f32 * rs;
+          let rs = inside_rect.width / 16.;
+          let rx = inside_rect.x + x as f32 * rs;
+          let ry = inside_rect.y + y as f32 * rs;
 
-        if d.gui_button(Rectangle::new(rx, ry, rs, rs), "") {
-          a.data.push(AtlasData {
-            chr_index: j,
-            x: 0,
-            y: 0,
-            c0: 0,
-            c1: 0,
-            c2: 0,
-          });
+          if d.gui_button(Rectangle::new(rx, ry, rs, rs), "") {
+            a.data.push(AtlasData {
+              chr_index: j,
+              x: 0,
+              y: 0,
+              c0: 1,
+              c1: 2,
+              c2: 3,
+            });
+            ad.regen_atlas_texture(d, t, a).unwrap();
+          }
         }
       }
-    }
 
-    if let Some(ad) = &c.atlas_display {
       let texture_width = ad.binary_texture.width as f32;
       let texture_height = ad.binary_texture.height as f32;
 

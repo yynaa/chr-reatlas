@@ -20,10 +20,18 @@ pub(crate) mod editor;
 pub(crate) mod pane;
 pub(crate) mod window;
 
-#[derive(Default)]
 pub(crate) struct Context {
   atlas: Option<Atlas>,
   atlas_display: Option<AtlasDisplay>,
+}
+
+impl Context {
+  pub fn new() -> Self {
+    Self {
+      atlas: None,
+      atlas_display: None,
+    }
+  }
 }
 
 fn main() {
@@ -40,7 +48,7 @@ fn main() {
 
   rl.gui_load_style(style_loc.to_str().unwrap());
 
-  let mut context = Context::default();
+  let mut context = Context::new();
 
   let mut editor = Editor::init();
 

@@ -1,4 +1,4 @@
-use image::{EncodableLayout, RgbaImage};
+use image::{EncodableLayout, RgbaImage, codecs::png::PngEncoder};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -50,9 +50,9 @@ impl Atlas {
   fn get_image(&self) -> Result<RgbaImage, crate::Error> {
     let mut chr_file = File::open(&self.binary).map_err(crate::Error::IOError)?;
     chr_file
-      .seek(SeekFrom::Start(self.start * 16))
+      .seek(SeekFrom::Start(self.start))
       .map_err(crate::Error::IOError)?;
-    let mut chr_buf = vec![0; self.length * 16];
+    let mut chr_buf = vec![0; self.length];
     chr_file
       .read_exact(&mut chr_buf)
       .map_err(crate::Error::IOError)?;
@@ -101,8 +101,15 @@ impl Atlas {
   }
 
   /// returns raw bytes for an image, allows crates to load them from memory
-  pub fn get_image_bytes(&self) -> Result<Vec<u8>, crate::Error> {
+  pub fn get_png_bytes(&self) -> Result<Vec<u8>, crate::Error> {
     let img = self.get_image()?;
-    Ok(img.as_bytes().to_vec())
+
+    let mut bytes = Vec::new();
+    let encoder = PngEncoder::new(&mut bytes);
+    img
+      .write_with_encoder(encoder)
+      .map_err(crate::Error::ImageError)?;
+
+    Ok(bytes)
   }
 }
