@@ -7,6 +7,7 @@ description = "a cli for chr-reatlas"
 homepage = "https://github.com/yynaa/chr-reatlas"
 repository = "https://github.com/yynaa/chr-reatlas"
 readme = "README.md"
+publish = false
 
 [dependencies]
 chr-reatlas = { path = "../chr-reatlas", features = ["serde"] }
