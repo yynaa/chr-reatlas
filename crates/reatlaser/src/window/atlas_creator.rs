@@ -95,9 +95,9 @@ impl Window<Context, AtlasCreatorMessage> for AtlasCreator {
         }
       }
 
-      if d.is_key_pressed(KeyboardKey::KEY_BACKSPACE) {
+      if d.is_key_pressed(KeyboardKey::KEY_BACKSPACE) && i {
         for (j, edit) in self.text_box_edits.iter().enumerate() {
-          if *edit && i {
+          if *edit {
             self.text_box_buffers[j].pop();
           }
         }

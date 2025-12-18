@@ -2,6 +2,7 @@ use raylib::prelude::*;
 
 pub mod file;
 pub mod picker;
+pub mod selected;
 
 pub(crate) trait Pane<C, M> {
   fn init() -> Self;

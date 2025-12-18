@@ -61,8 +61,10 @@ impl Editor {
           }
 
           if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
-            c.selected_data = None;
-            for (j, data) in a.data.iter().enumerate() {
+            if dc.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+              c.selected_data = None;
+            }
+            for (j, data) in a.data.iter().enumerate().rev() {
               if Rectangle::new(data.x as f32, data.y as f32, 8., 8.)
                 .check_collision_point_rec(projected_mouse)
               {
@@ -92,6 +94,9 @@ impl Editor {
                 ad.regen_atlas_texture(&mut dc, t, a).unwrap();
               }
             }
+            if self.moving_data.is_some() {
+              self.moving_data = None;
+            }
           }
         }
 
@@ -105,16 +110,37 @@ impl Editor {
 
         if let Some(at) = &ad.atlas_texture {
           dc.draw_texture(&at, 0, 0, Color::WHITE);
-          if self.moving && self.moving_data.is_some() {
-            dc.draw_rectangle_rec(
-              Rectangle::new(
-                (projected_mouse.x - 4.).round(),
-                (projected_mouse.y - 4.).round(),
-                8.,
-                8.,
-              ),
-              Color::new(255, 255, 255, 100),
-            );
+          if self.moving {
+            if let Some(md) = self.moving_data {
+              // dc.draw_rectangle_rec(
+              //   Rectangle::new(
+              //     (projected_mouse.x - 4.).round(),
+              //     (projected_mouse.y - 4.).round(),
+              //     8.,
+              //     8.,
+              //   ),
+              //   Color::new(255, 255, 255, 100),
+              // );
+
+              dc.draw_texture_pro(
+                &ad.binary_texture,
+                Rectangle::new(
+                  (a.data[md].chr_index % 16) as f32 * 8.,
+                  (a.data[md].chr_index / 16) as f32 * 8.,
+                  8.,
+                  8.,
+                ),
+                Rectangle::new(
+                  (projected_mouse.x - 4.).round(),
+                  (projected_mouse.y - 4.).round(),
+                  8.,
+                  8.,
+                ),
+                Vector2::zero(),
+                0.,
+                Color::WHITE,
+              );
+            }
           }
         }
       }

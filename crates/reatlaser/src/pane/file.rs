@@ -44,6 +44,7 @@ impl Pane<Context, FilePanelMessage> for FilePanel {
         let file_content = read_to_string(file_path).unwrap();
         let new_atlas: Atlas = toml::from_str(&file_content).unwrap();
         let atlas_display = AtlasDisplay::from_atlas(d, t, &new_atlas).unwrap();
+        c.selected_data = None;
         c.atlas = Some(new_atlas);
         c.atlas_display = Some(atlas_display);
       }

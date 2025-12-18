@@ -1,6 +1,7 @@
 use raylib::{RaylibThread, math::Rectangle, prelude::RaylibDrawHandle};
 
 pub(crate) mod atlas_creator;
+pub(crate) mod color_picker;
 
 #[macro_export]
 macro_rules! make_text_input {

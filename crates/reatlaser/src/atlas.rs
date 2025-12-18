@@ -1,6 +1,9 @@
 use anyhow::Result;
 use chr_reatlas::{
-  atlas::Atlas, chr::read_bytes, pal::ChrPalette, render::get_patterns_as_png_bytes,
+  atlas::Atlas,
+  chr::read_bytes,
+  pal::{ChrPalette, read_palette_from_bytes},
+  render::get_patterns_as_png_bytes,
 };
 use raylib::prelude::*;
 use std::{
@@ -11,6 +14,7 @@ use std::{
 pub struct AtlasDisplay {
   pub binary_texture: Texture2D,
   pub atlas_texture: Option<Texture2D>,
+  pub palette: Vec<[u8; 3]>,
 }
 
 impl AtlasDisplay {
@@ -35,9 +39,15 @@ impl AtlasDisplay {
       }
     };
 
+    let mut pal_file = File::open(&a.palette)?;
+    let mut pal_buf = Vec::new();
+    pal_file.read_to_end(&mut pal_buf)?;
+    let palette = read_palette_from_bytes(pal_buf)?;
+
     Ok(Self {
       binary_texture,
       atlas_texture,
+      palette,
     })
   }
 
