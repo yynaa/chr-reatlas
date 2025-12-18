@@ -1,16 +1,29 @@
+use std::time::Instant;
+
+use chr_reatlas::atlas::Atlas;
 use raylib::prelude::*;
 
-use crate::Context;
+use crate::{Context, SelectionType};
+
+enum LeftClickMode {
+  NoModifiers,
+  Control,
+}
 
 pub struct Editor {
   camera: Camera2D,
 
-  moving_data: Option<usize>,
-  moving_initial_click: Vector2,
+  lc_mode: LeftClickMode,
+  lc_hold: bool,
+  lc_pressed_time: Instant,
+  lc_pressed_pos: Vector2,
   moving: bool,
+  selecting_rectangle: bool,
 }
 
 pub enum EditorMessages {}
+
+const TIME_BEFORE_HOLD: f32 = 0.2;
 
 impl Editor {
   pub fn init() -> Self {
@@ -22,10 +35,30 @@ impl Editor {
         zoom: 3.,
       },
 
-      moving_data: None,
-      moving_initial_click: Vector2::zero(),
+      lc_mode: LeftClickMode::NoModifiers,
+      lc_hold: false,
+      lc_pressed_time: Instant::now(),
+      lc_pressed_pos: Vector2::zero(),
       moving: false,
+      selecting_rectangle: false,
     }
+  }
+
+  fn select_single_data_at_position(
+    &mut self,
+    a: &Atlas,
+    projected_mouse: Vector2,
+  ) -> Option<SelectionType> {
+    let mut r = None;
+    for (j, data) in a.data.iter().enumerate().rev() {
+      if r.is_none()
+        && Rectangle::new(data.x as f32, data.y as f32, 8., 8.)
+          .check_collision_point_rec(projected_mouse)
+      {
+        r = Some(SelectionType::Single(j));
+      }
+    }
+    r
   }
 
   pub fn display(
@@ -60,42 +93,92 @@ impl Editor {
             self.camera.target -= dc.get_mouse_delta() / self.camera.zoom;
           }
 
-          if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
-            if dc.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
-              c.selected_data = None;
+          if dc.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) {
+            if dc.is_key_down(KeyboardKey::KEY_LEFT_CONTROL) {
+              self.lc_mode = LeftClickMode::Control;
+            } else {
+              self.lc_mode = LeftClickMode::NoModifiers;
             }
-            for (j, data) in a.data.iter().enumerate().rev() {
-              if Rectangle::new(data.x as f32, data.y as f32, 8., 8.)
-                .check_collision_point_rec(projected_mouse)
-              {
-                if self.moving_data.is_none() {
-                  self.moving_data = Some(j);
-                  self.moving_initial_click = projected_mouse;
+            self.lc_pressed_time = Instant::now();
+            self.lc_pressed_pos = projected_mouse;
+            self.lc_hold = false;
+          }
+
+          let now_hold = self.lc_pressed_time.elapsed().as_secs_f32() > TIME_BEFORE_HOLD;
+          if dc.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) && !self.lc_hold && now_hold {
+            self.lc_hold = true;
+            // HOLD SWITCH EVENT
+            match self.lc_mode {
+              LeftClickMode::NoModifiers => {
+                match c.selected_data {
+                  Some(SelectionType::Multiple(_)) => {}
+                  _ => {
+                    c.selected_data = self.select_single_data_at_position(a, self.lc_pressed_pos);
+                  }
+                }
+                self.moving = true;
+              }
+              LeftClickMode::Control => {
+                self.selecting_rectangle = true;
+              }
+            }
+          }
+
+          if dc.is_mouse_button_released(MouseButton::MOUSE_BUTTON_LEFT) {
+            if self.lc_hold {
+              // HOLDING
+              match self.lc_mode {
+                LeftClickMode::NoModifiers => {
                   self.moving = false;
+                  if let Some(st) = &c.selected_data {
+                    match st {
+                      SelectionType::Single(sd) => {
+                        a.data[*sd].x = (projected_mouse.x - 4.).round() as u32;
+                        a.data[*sd].y = (projected_mouse.y - 4.).round() as u32;
+                        ad.regen_atlas_texture(&mut dc, t, a).unwrap();
+                        c.selected_data = None;
+                      }
+                      SelectionType::Multiple(sds) => {
+                        for sd in sds {
+                          let original_vector =
+                            Vector2::new(a.data[*sd].x as f32, a.data[*sd].y as f32);
+                          let mouse_offset = (projected_mouse - 4.) - self.lc_pressed_pos;
+                          let displacement = original_vector + mouse_offset;
+                          a.data[*sd].x = displacement.x.round() as u32;
+                          a.data[*sd].y = displacement.y.round() as u32;
+                          ad.regen_atlas_texture(&mut dc, t, a).unwrap();
+                        }
+                      }
+                    }
+                  }
                 }
-                if c.selected_data.is_none() {
-                  c.selected_data = Some(j);
+                LeftClickMode::Control => {
+                  self.selecting_rectangle = false;
+                  let srec = Rectangle::new(
+                    self.lc_pressed_pos.x.min(projected_mouse.x),
+                    self.lc_pressed_pos.y.min(projected_mouse.y),
+                    (self.lc_pressed_pos.x - projected_mouse.x).abs(),
+                    (self.lc_pressed_pos.y - projected_mouse.y).abs(),
+                  );
+                  let mut selected_datas = Vec::new();
+                  for (j, data) in a.data.iter().enumerate() {
+                    if Rectangle::new(data.x as f32, data.y as f32, 8., 8.)
+                      .check_collision_recs(&srec)
+                    {
+                      selected_datas.push(j);
+                    }
+                  }
+                  c.selected_data = Some(SelectionType::Multiple(selected_datas))
                 }
               }
-            }
-            if self.moving_data.is_some()
-              && !self.moving
-              && projected_mouse.distance_to(self.moving_initial_click) > 1.5
-            {
-              self.moving = true;
-            }
-          } else {
-            if self.moving {
-              if let Some(sd) = &self.moving_data {
-                a.data[*sd].x = (projected_mouse.x - 4.).round() as u32;
-                a.data[*sd].y = (projected_mouse.y - 4.).round() as u32;
-                self.moving_data = None;
-                self.moving = false;
-                ad.regen_atlas_texture(&mut dc, t, a).unwrap();
+            } else {
+              // CLICKING
+              match self.lc_mode {
+                LeftClickMode::NoModifiers => {
+                  c.selected_data = self.select_single_data_at_position(a, self.lc_pressed_pos);
+                }
+                _ => {}
               }
-            }
-            if self.moving_data.is_some() {
-              self.moving_data = None;
             }
           }
         }
@@ -110,37 +193,107 @@ impl Editor {
 
         if let Some(at) = &ad.atlas_texture {
           dc.draw_texture(&at, 0, 0, Color::WHITE);
-          if self.moving {
-            if let Some(md) = self.moving_data {
-              // dc.draw_rectangle_rec(
-              //   Rectangle::new(
-              //     (projected_mouse.x - 4.).round(),
-              //     (projected_mouse.y - 4.).round(),
-              //     8.,
-              //     8.,
-              //   ),
-              //   Color::new(255, 255, 255, 100),
-              // );
 
-              dc.draw_texture_pro(
-                &ad.binary_texture,
-                Rectangle::new(
-                  (a.data[md].chr_index % 16) as f32 * 8.,
-                  (a.data[md].chr_index / 16) as f32 * 8.,
-                  8.,
-                  8.,
-                ),
-                Rectangle::new(
-                  (projected_mouse.x - 4.).round(),
-                  (projected_mouse.y - 4.).round(),
-                  8.,
-                  8.,
-                ),
-                Vector2::zero(),
-                0.,
-                Color::WHITE,
-              );
+          if !self.moving {
+            if let Some(st) = &c.selected_data {
+              const LINE_WIDTH: f32 = 0.5;
+              match st {
+                SelectionType::Single(sd) => {
+                  dc.draw_rectangle_lines_ex(
+                    Rectangle::new(
+                      a.data[*sd].x as f32 - LINE_WIDTH,
+                      a.data[*sd].y as f32 - LINE_WIDTH,
+                      8. + 2. * LINE_WIDTH,
+                      8. + 2. * LINE_WIDTH,
+                    ),
+                    LINE_WIDTH,
+                    Color::WHITE,
+                  );
+                }
+                SelectionType::Multiple(sds) => {
+                  for sd in sds {
+                    dc.draw_rectangle_lines_ex(
+                      Rectangle::new(
+                        a.data[*sd].x as f32 - LINE_WIDTH,
+                        a.data[*sd].y as f32 - LINE_WIDTH,
+                        8. + 2. * LINE_WIDTH,
+                        8. + 2. * LINE_WIDTH,
+                      ),
+                      LINE_WIDTH,
+                      Color::WHITE,
+                    );
+                  }
+                }
+              }
             }
+          }
+
+          if self.moving {
+            if let Some(st) = &c.selected_data {
+              match st {
+                SelectionType::Single(sd) => {
+                  let dest_rec = Rectangle::new(
+                    (projected_mouse.x - 4.).round(),
+                    (projected_mouse.y - 4.).round(),
+                    8.,
+                    8.,
+                  );
+
+                  dc.draw_rectangle_rec(dest_rec, Color::new(0, 0, 0, 100));
+
+                  dc.draw_texture_pro(
+                    &ad.binary_texture,
+                    Rectangle::new(
+                      (a.data[*sd].chr_index % 16) as f32 * 8.,
+                      (a.data[*sd].chr_index / 16) as f32 * 8.,
+                      8.,
+                      8.,
+                    ),
+                    dest_rec,
+                    Vector2::zero(),
+                    0.,
+                    Color::WHITE,
+                  );
+                }
+                SelectionType::Multiple(sds) => {
+                  for sd in sds {
+                    let original_vector = Vector2::new(a.data[*sd].x as f32, a.data[*sd].y as f32);
+                    let mouse_offset = (projected_mouse - 4.) - self.lc_pressed_pos;
+                    let displacement = original_vector + mouse_offset;
+
+                    let dest_rec =
+                      Rectangle::new(displacement.x.round(), displacement.y.round(), 8., 8.);
+
+                    dc.draw_rectangle_rec(dest_rec, Color::new(0, 0, 0, 100));
+
+                    dc.draw_texture_pro(
+                      &ad.binary_texture,
+                      Rectangle::new(
+                        (a.data[*sd].chr_index % 16) as f32 * 8.,
+                        (a.data[*sd].chr_index / 16) as f32 * 8.,
+                        8.,
+                        8.,
+                      ),
+                      dest_rec,
+                      Vector2::zero(),
+                      0.,
+                      Color::WHITE,
+                    );
+                  }
+                }
+              }
+            }
+          }
+
+          if self.selecting_rectangle {
+            let srec = Rectangle::new(
+              self.lc_pressed_pos.x.min(projected_mouse.x),
+              self.lc_pressed_pos.y.min(projected_mouse.y),
+              (self.lc_pressed_pos.x - projected_mouse.x).abs(),
+              (self.lc_pressed_pos.y - projected_mouse.y).abs(),
+            );
+
+            dc.draw_rectangle_rec(srec, Color::new(255, 255, 255, 128));
           }
         }
       }

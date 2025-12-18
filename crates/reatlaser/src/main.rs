@@ -23,10 +23,15 @@ pub(crate) mod editor;
 pub(crate) mod pane;
 pub(crate) mod window;
 
+pub(crate) enum SelectionType {
+  Single(usize),
+  Multiple(Vec<usize>),
+}
+
 pub(crate) struct Context {
   atlas: Option<Atlas>,
   atlas_display: Option<AtlasDisplay>,
-  selected_data: Option<usize>,
+  selected_data: Option<SelectionType>,
 
   default_colors: [usize; 3],
 }
