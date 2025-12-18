@@ -1,4 +1,4 @@
-use image::{EncodableLayout, RgbaImage, codecs::png::PngEncoder};
+use image::{RgbaImage, codecs::png::PngEncoder};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-  chr::read_bytes,
+  chr::{flip_x, flip_y, read_bytes, transpose},
   pal::{ChrPalette, read_palette_from_bytes},
   render::append_pattern_on_image,
 };
@@ -44,6 +44,15 @@ pub struct AtlasData {
   pub x: u32,
   /// y position
   pub y: u32,
+  /// transpose
+  #[serde(default)]
+  pub transpose: bool,
+  /// flip x
+  #[serde(default)]
+  pub flip_x: bool,
+  /// flip y
+  #[serde(default)]
+  pub flip_y: bool,
 }
 
 impl Atlas {
@@ -77,9 +86,21 @@ impl Atlas {
       if d.chr_index >= chrs.len() {
         return Err(crate::Error::AtlasWrongIndexError(d.chr_index));
       }
+
+      let mut chr = chrs[d.chr_index];
+      if d.transpose {
+        transpose(&mut chr);
+      }
+      if d.flip_x {
+        flip_x(&mut chr);
+      }
+      if d.flip_y {
+        flip_y(&mut chr);
+      }
+
       append_pattern_on_image(
         &mut img,
-        chrs[d.chr_index],
+        chr,
         d.x,
         d.y,
         ChrPalette {

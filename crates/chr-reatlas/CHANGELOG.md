@@ -7,6 +7,7 @@ Based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ### Added
 
 - Several options for getting images as bytes instead of rendering them directly
+- Transposition and flips for individual chrs in atlas
 
 ### Changed
 

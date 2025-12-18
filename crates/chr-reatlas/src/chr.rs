@@ -30,6 +30,27 @@ pub fn read_single_chr(b: [u8; 16]) -> ChrPixelPattern {
   r
 }
 
+/// x flip a chr
+pub fn flip_x(b: &mut ChrPixelPattern) {
+  for bb in b {
+    bb.reverse();
+  }
+}
+
+/// y flip a chr
+pub fn flip_y(b: &mut ChrPixelPattern) {
+  b.reverse();
+}
+
+/// transpose a chr
+pub fn transpose(b: &mut ChrPixelPattern) {
+  for i in 1..8 {
+    for j in 0..i {
+      b[i][j] = b[j][i];
+    }
+  }
+}
+
 /// read a vector of chrs from bytes
 pub fn read_bytes(b: Vec<u8>) -> Result<Vec<ChrPixelPattern>, crate::Error> {
   let slices = b.chunks(16);
