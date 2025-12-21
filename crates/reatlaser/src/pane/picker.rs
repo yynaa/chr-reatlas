@@ -23,7 +23,7 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
     let height = d.get_screen_height();
 
     let window_width = 8. * 16. * SCALE;
-    let window_height = height as f32 - 20. - 200.;
+    let window_height = height as f32 - 20. - 260.;
 
     Rectangle::new(
       width as f32 - window_width - 10.,
@@ -65,6 +65,7 @@ impl Pane<Context, PickerPaneMessage> for PickerPanel {
               chr_index: j,
               x: 0,
               y: 0,
+              cbg: None,
               c0: c.default_colors[0],
               c1: c.default_colors[1],
               c2: c.default_colors[2],

@@ -2,19 +2,27 @@ use raylib::prelude::*;
 
 use crate::{Context, window::Window};
 
+pub enum ColorPickerToChange {
+  Color {
+    currently_editing_data: usize,
+    color_index: u32,
+  },
+  BackgroundColor {
+    currently_editing_data: usize,
+  },
+}
+
 pub struct ColorPicker {
   opened: bool,
 
-  currently_editing_data: usize,
-  color_index: u32,
+  to_change: ColorPickerToChange,
 }
 
 pub enum ColorPickerMessage {}
 
 impl ColorPicker {
-  pub fn set_data(&mut self, currently_editing_data: usize, color_index: u32) {
-    self.currently_editing_data = currently_editing_data;
-    self.color_index = color_index;
+  pub fn set_data(&mut self, to_change: ColorPickerToChange) {
+    self.to_change = to_change;
   }
 }
 
@@ -22,8 +30,9 @@ impl Window<Context, ColorPickerMessage> for ColorPicker {
   fn init() -> Self {
     Self {
       opened: false,
-      currently_editing_data: 0,
-      color_index: 0,
+      to_change: ColorPickerToChange::BackgroundColor {
+        currently_editing_data: 0,
+      },
     }
   }
 
@@ -73,12 +82,24 @@ impl Window<Context, ColorPickerMessage> for ColorPicker {
 
         if d.gui_button(cr, "") && i {
           if let Some(a) = &mut c.atlas {
-            match self.color_index {
-              0 => a.data[self.currently_editing_data].c0 = j,
-              1 => a.data[self.currently_editing_data].c1 = j,
-              2 => a.data[self.currently_editing_data].c2 = j,
-              _ => panic!(),
-            };
+            match self.to_change {
+              ColorPickerToChange::Color {
+                currently_editing_data,
+                color_index,
+              } => {
+                match color_index {
+                  0 => a.data[currently_editing_data].c0 = j,
+                  1 => a.data[currently_editing_data].c1 = j,
+                  2 => a.data[currently_editing_data].c2 = j,
+                  _ => panic!(),
+                };
+              }
+              ColorPickerToChange::BackgroundColor {
+                currently_editing_data,
+              } => {
+                a.data[currently_editing_data].cbg = Some(j);
+              }
+            }
 
             ad.regen_atlas_texture(d, t, a).unwrap();
             self.opened = false;

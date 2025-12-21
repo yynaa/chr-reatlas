@@ -33,6 +33,7 @@ pub(crate) struct Context {
   selected_data: Option<SelectionType>,
 
   default_colors: [usize; 3],
+  default_background_color: Option<usize>,
 }
 
 impl Context {
@@ -42,6 +43,7 @@ impl Context {
       atlas_display: None,
       selected_data: None,
       default_colors: [0, 0, 0],
+      default_background_color: None,
     }
   }
 }
@@ -122,9 +124,9 @@ fn main() {
         let messages = selected_panel.display(&mut d, &thread, &mut context, i);
         for m in messages {
           match m {
-            SelectedPanelMessage::OpenColorPicker(sd, c) => {
+            SelectedPanelMessage::OpenColorPicker(tc) => {
               color_picker_window.set_opened(true);
-              color_picker_window.set_data(sd, c);
+              color_picker_window.set_data(tc);
             }
           }
         }

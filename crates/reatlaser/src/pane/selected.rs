@@ -1,11 +1,11 @@
 use raylib::prelude::*;
 
-use crate::{Context, SelectionType, pane::Pane};
+use crate::{Context, SelectionType, pane::Pane, window::color_picker::ColorPickerToChange};
 
 pub struct SelectedPanel {}
 
 pub enum SelectedPanelMessage {
-  OpenColorPicker(usize, u32),
+  OpenColorPicker(ColorPickerToChange),
 }
 
 impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
@@ -22,7 +22,7 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
     let height = d.get_screen_height();
 
     let window_width = 400.;
-    let window_height = 200.;
+    let window_height = 250.;
 
     Rectangle::new(
       width as f32 - window_width - 10.,
@@ -101,7 +101,12 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                 ),
                 "Set C0",
               ) {
-                _r.push(SelectedPanelMessage::OpenColorPicker(*sd, 0));
+                _r.push(SelectedPanelMessage::OpenColorPicker(
+                  ColorPickerToChange::Color {
+                    currently_editing_data: *sd,
+                    color_index: 0,
+                  },
+                ));
               }
               if d.gui_button(
                 Rectangle::new(
@@ -112,7 +117,12 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                 ),
                 "Set C1",
               ) {
-                _r.push(SelectedPanelMessage::OpenColorPicker(*sd, 1));
+                _r.push(SelectedPanelMessage::OpenColorPicker(
+                  ColorPickerToChange::Color {
+                    currently_editing_data: *sd,
+                    color_index: 1,
+                  },
+                ));
               }
               if d.gui_button(
                 Rectangle::new(
@@ -123,7 +133,12 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                 ),
                 "Set C2",
               ) {
-                _r.push(SelectedPanelMessage::OpenColorPicker(*sd, 2));
+                _r.push(SelectedPanelMessage::OpenColorPicker(
+                  ColorPickerToChange::Color {
+                    currently_editing_data: *sd,
+                    color_index: 2,
+                  },
+                ));
               }
 
               let c0 = ad.palette[a.data[*sd].c0];
@@ -166,7 +181,8 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                 ),
                 "Tile |> Buffer",
               ) {
-                c.default_colors = [a.data[*sd].c0, a.data[*sd].c1, a.data[*sd].c2]
+                c.default_colors = [a.data[*sd].c0, a.data[*sd].c1, a.data[*sd].c2];
+                c.default_background_color = a.data[*sd].cbg;
               }
 
               if d.gui_button(
@@ -181,11 +197,61 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                 a.data[*sd].c0 = c.default_colors[0];
                 a.data[*sd].c1 = c.default_colors[1];
                 a.data[*sd].c2 = c.default_colors[2];
+                a.data[*sd].cbg = c.default_background_color;
+                ad.regen_atlas_texture(d, &t, a).unwrap();
+              }
+
+              if let Some(cbg) = a.data[*sd].cbg {
+                let cbg_pal = ad.palette[cbg];
+
+                d.draw_rectangle_rec(
+                  Rectangle::new(
+                    inside_rect.x + 10. + (inside_rect.width - 20.) / 3.,
+                    inside_rect.y + 10. + 120.,
+                    (inside_rect.width - 20.) / 3.,
+                    20.,
+                  ),
+                  Color::new(cbg_pal[0], cbg_pal[1], cbg_pal[2], 255),
+                );
+
+                if d.gui_button(
+                  Rectangle::new(
+                    inside_rect.x + 10.,
+                    inside_rect.y + 10. + 120.,
+                    (inside_rect.width - 20.) / 3.,
+                    20.,
+                  ),
+                  "Set CBG",
+                ) {
+                  _r.push(SelectedPanelMessage::OpenColorPicker(
+                    ColorPickerToChange::BackgroundColor {
+                      currently_editing_data: *sd,
+                    },
+                  ));
+                }
+              }
+
+              if d.gui_check_box(
+                Rectangle::new(
+                  inside_rect.x + 10. + 2. * (inside_rect.width - 20.) / 3.,
+                  inside_rect.y + 10. + 120.,
+                  20.,
+                  20.,
+                ),
+                "Enable BG",
+                &mut a.data[*sd].cbg.is_some(),
+              ) {
+                if a.data[*sd].cbg.is_some() {
+                  a.data[*sd].cbg = None;
+                } else {
+                  a.data[*sd].cbg = Some(0);
+                }
+
                 ad.regen_atlas_texture(d, &t, a).unwrap();
               }
 
               if d.gui_check_box(
-                Rectangle::new(inside_rect.x + 10., inside_rect.y + 10. + 130., 20., 20.),
+                Rectangle::new(inside_rect.x + 10., inside_rect.y + 10. + 160., 20., 20.),
                 "Transpose",
                 &mut a.data[*sd].transpose,
               ) {
@@ -195,7 +261,7 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
               if d.gui_check_box(
                 Rectangle::new(
                   inside_rect.x + 10. + (inside_rect.width - 20.) / 3.,
-                  inside_rect.y + 10. + 130.,
+                  inside_rect.y + 10. + 160.,
                   20.,
                   20.,
                 ),
@@ -208,7 +274,7 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
               if d.gui_check_box(
                 Rectangle::new(
                   inside_rect.x + 10. + 2. * (inside_rect.width - 20.) / 3.,
-                  inside_rect.y + 10. + 130.,
+                  inside_rect.y + 10. + 160.,
                   20.,
                   20.,
                 ),
@@ -274,6 +340,7 @@ impl Pane<Context, SelectedPanelMessage> for SelectedPanel {
                   a.data[*sd].c0 = c.default_colors[0];
                   a.data[*sd].c1 = c.default_colors[1];
                   a.data[*sd].c2 = c.default_colors[2];
+                  a.data[*sd].cbg = c.default_background_color;
                 }
                 ad.regen_atlas_texture(d, t, a).unwrap();
               }
