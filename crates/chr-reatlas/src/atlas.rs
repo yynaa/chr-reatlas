@@ -53,6 +53,8 @@ pub struct AtlasData {
   /// flip y
   #[cfg_attr(feature = "serde", serde(default))]
   pub flip_y: bool,
+  /// color background
+  pub cbg: Option<usize>,
 }
 
 impl Atlas {
@@ -104,6 +106,7 @@ impl Atlas {
         d.x,
         d.y,
         ChrPalette {
+          cbg: d.cbg.map(|c| pal[c]),
           c0: pal[d.c0],
           c1: pal[d.c1],
           c2: pal[d.c2],

@@ -1,6 +1,7 @@
 /// a palette for a chr
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub struct ChrPalette {
+  pub cbg: Option<[u8; 3]>,
   /// color 0
   pub c0: [u8; 3],
   /// color 1
@@ -12,6 +13,7 @@ pub struct ChrPalette {
 impl Default for ChrPalette {
   fn default() -> Self {
     Self {
+      cbg: None,
       c0: [86, 86, 86],
       c1: [170, 170, 170],
       c2: [255, 255, 255],
