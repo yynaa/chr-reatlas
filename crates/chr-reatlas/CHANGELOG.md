@@ -2,6 +2,12 @@
 
 Based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
+## 0.3.1 - 2025-12-22
+
+### Fixed
+
+- Transparency in atlases
+
 ## 0.3.0 - 2025-12-22
 
 ### Added

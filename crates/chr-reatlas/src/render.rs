@@ -16,20 +16,23 @@ pub(crate) fn append_pattern_on_image(
 ) {
   for x in 0..8usize {
     for y in 0..8usize {
-      image.put_pixel(
-        x as u32 + sx,
-        y as u32 + sy,
-        match pat[y][x].value() {
-          0 => match pal.cbg {
-            None => Rgba([0, 0, 0, 0]),
-            Some(c) => Rgba([c[0], c[1], c[2], 255]),
+      let v = pat[y][x].value();
+      if v != 0 || pal.cbg.is_some() {
+        image.put_pixel(
+          x as u32 + sx,
+          y as u32 + sy,
+          match v {
+            0 => match pal.cbg {
+              None => panic!(),
+              Some(c) => Rgba([c[0], c[1], c[2], 255]),
+            },
+            1 => Rgba([pal.c0[0], pal.c0[1], pal.c0[2], 255]),
+            2 => Rgba([pal.c1[0], pal.c1[1], pal.c1[2], 255]),
+            3 => Rgba([pal.c2[0], pal.c2[1], pal.c2[2], 255]),
+            _ => panic!(),
           },
-          1 => Rgba([pal.c0[0], pal.c0[1], pal.c0[2], 255]),
-          2 => Rgba([pal.c1[0], pal.c1[1], pal.c1[2], 255]),
-          3 => Rgba([pal.c2[0], pal.c2[1], pal.c2[2], 255]),
-          _ => panic!(),
-        },
-      );
+        );
+      }
     }
   }
 }
